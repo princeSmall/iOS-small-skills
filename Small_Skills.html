@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+<meta charset="utf-8">
+<title>IOS_Small_Skill</title>
+<meta name="description" content="Some small skills">
+<meta name="author" content="童乐">
+<meta name="viewport" content="width=device=width,initail-scale=1">
+<link rel="stylesheet" type="text/css" href="./css/Small_Skills.css">
+
+  </head>
+  <body>
+      <h1 class="title">ios_small_skills</h1>
+      <h2 class="first-title">1、两种方法删除NSUserDefaults所有记录</h2>
+      <pre>
+方法一
+NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
+ 
+ 
+方法二
+- (void)resetDefaults
+{
+    NSUserDefaults * defs = [NSUserDefaults standardUserDefaults];
+    NSDictionary * dict = [defs dictionaryRepresentation];
+    for (id key in dict)
+    {
+        [defs removeObjectForKey:key];
+    }
+    [defs synchronize];
+}
+      </pre>
+      <h2 class="second-title">2、UITableView的plain样式下，取消Header停滞效果</h2>
+<pre>
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    CGFloat sectionHeaderHeight = sectionHead.height;
+    if (scrollView.contentOffset.y=0)
+    {
+        scrollView.contentInset = UIEdgeInsetsMake(-scrollView.contentOffset.y, 0, 0, 0);
+    }
+    else if(scrollView.contentOffset.y>=sectionHeaderHeight)
+    {
+        scrollView.contentInset = UIEdgeInsetsMake(-sectionHeaderHeight, 0, 0, 0);
+    }
+}
+</pre>
+<h2 class="three-title">3、字符串反转</h2>
+<pre>
+第一种：
+- (NSString *)reverseWordsInString:(NSString *)str
+{    
+    NSMutableString *newString = [[NSMutableString alloc] initWithCapacity:str.length];
+    for (NSInteger i = str.length - 1; i >= 0 ; i --)
+    {
+        unichar ch = [str characterAtIndex:i];       
+        [newString appendFormat:@"%c", ch];    
+    }    
+     return newString;
+}
+ 
+第二种：
+- (NSString*)reverseWordsInString:(NSString*)str
+{    
+     NSMutableString *reverString = [NSMutableString stringWithCapacity:str.length];    
+     [str enumerateSubstringsInRange:NSMakeRange(0, str.length) options:NSStringEnumerationReverse | NSStringEnumerationByComposedCharacterSequences  
+     usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) { 
+          [reverString appendString:substring];                         
+      }];    
+     return reverString;
+}
+</pre>
+<h2 class="four-title">4、禁止锁屏</h2>
+<h3>默认情况下，当设备一段时间没有触控动作时，iOS会锁住屏幕。但有一些应用是不需要锁屏的，比如视频播放器</h3>
+<pre>
+方法一：
+    [UIApplication sharedApplication].idleTimerDisabled = YES;
+方法二：
+    [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
+</pre>
+<h2 class="five-title">5、手动更改iOS状态栏的颜色</h2>
+<pre>
+    - (void)setStatusBarBackgroundColor:(UIColor *)color
+{
+    UIView *statusBar = [[[UIApplication sharedApplication] valueForKey:@"statusBarWindow"] valueForKey:@"statusBar"];
+ 
+    if ([statusBar respondsToSelector:@selector(setBackgroundColor:)])
+    {
+        statusBar.backgroundColor = color;    
+    }
+}
+</pre>
+<h2 class="six-title">6、NSArray 快速求总和 最大值 最小值 和 平均值</h2>
+<pre>
+NSArray *array = [NSArray arrayWithObjects:@"2.0", @"2.3", @"3.0", @"4.0", @"10", nil];
+CGFloat sum = [[array valueForKeyPath:@"@sum.floatValue"] floatValue];
+CGFloat avg = [[array valueForKeyPath:@"@avg.floatValue"] floatValue];
+CGFloat max =[[array valueForKeyPath:@"@max.floatValue"] floatValue];
+CGFloat min =[[array valueForKeyPath:@"@min.floatValue"] floatValue];
+NSLog(@"%f\n%f\n%f\n%f",sum,avg,max,min);
+</pre>
+<h2 class="seven-title">7、获取一个类的所有子类</h2>
+<pre>
+    + (NSArray *) allSubclasses
+{
+    Class myClass = [self class];
+    NSMutableArray *mySubclasses = [NSMutableArray array];
+    unsigned int numOfClasses;
+    Class *classes = objc_copyClassList(&numOfClasses;);
+    for (unsigned int ci = 0; ci ( numOfClasses; ci++)
+    {
+        Class superClass = classes[ci];
+        do{
+            superClass = class_getSuperclass(superClass);
+        } while (superClass && superClass != myClass);
+ 
+        if (superClass)
+        {
+            [mySubclasses addObject: classes[ci]];
+        }
+    }
+    free(classes);
+    return mySubclasses;
+}
+</pre>
+<h2 class="eight-title">8、GCD timer定时器</h2>
+<pre>
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+dispatch_source_set_timer(timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+dispatch_source_set_event_handler(timer, ^{
+    //@"倒计时结束，关闭"
+    dispatch_source_cancel(timer); 
+    dispatch_async(dispatch_get_main_queue(), ^{
+ 
+    });
+});
+dispatch_resume(timer);
+</pre>
+<h2 nine-title>9、图片上绘制文字 写一个UIImage的category</h2>
+<pre>
+- (UIImage *)imageWithTitle:(NSString *)title fontSize:(CGFloat)fontSize
+{
+    //画布大小
+    CGSize size=CGSizeMake(self.size.width,self.size.height);
+    //创建一个基于位图的上下文
+    UIGraphicsBeginImageContextWithOptions(size,NO,0.0);//opaque:NO  scale:0.0
+ 
+    [self drawAtPoint:CGPointMake(0.0,0.0)];
+ 
+    //文字居中显示在画布上
+    NSMutableParagraphStyle* paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.lineBreakMode = NSLineBreakByCharWrapping;
+    paragraphStyle.alignment=NSTextAlignmentCenter;//文字居中
+ 
+    //计算文字所占的size,文字居中显示在画布上
+    CGSize sizeText=[title boundingRectWithSize:self.size options:NSStringDrawingUsesLineFragmentOrigin
+                                     attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:fontSize]}context:nil].size;
+    CGFloat width = self.size.width;
+    CGFloat height = self.size.height;
+ 
+    CGRect rect = CGRectMake((width-sizeText.width)/2, (height-sizeText.height)/2, sizeText.width, sizeText.height);
+    //绘制文字
+    [title drawInRect:rect withAttributes:@{ NSFontAttributeName:[UIFont systemFontOfSize:fontSize],NSForegroundColorAttributeName:[ UIColor whiteColor],NSParagraphStyleAttributeName:paragraphStyle}];
+ 
+    //返回绘制的新图形
+    UIImage *newImage= UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+</pre>
+<h2 class="ten-title">10、查找一个视图的所有子视图</h2>
+<pre>
+ - (NSMutableArray *)allSubViewsForView:(UIView *)view
+{
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:0];
+    for (UIView *subView in view.subviews)
+    {
+        [array addObject:subView];
+        if (subView.subviews.count > 0)
+        {
+            [array addObjectsFromArray:[self allSubViewsForView:subView]];
+        }
+    }
+    return array;
+}
+
+</pre>
+<h2 eleven-title>11、UIView设置部分圆角</h2>
+<h3>你是不是也遇到过这样的问题，一个button或者label，只要右边的两个角圆角，或者只要一个圆角。这就需要图层蒙</h3>
+<pre>
+CGRect rect = view.bounds;
+CGSize radio = CGSizeMake(30, 30);
+UIRectCorner corner = UIRectCornerTopLeft|UIRectCornerTopRight;
+UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:rect byRoundingCorners:corner cornerRadii:radio];
+CAShapeLayer *masklayer = [[CAShapeLayer alloc]init];
+masklayer.frame = view.bounds;
+masklayer.path = path.CGPath;
+view.layer.mask = masklayer;
+</pre>
+<h2 class="twelve-title">12、navigationBar变为纯透明和去掉底部黑线</h2>
+<pre>
+第一种方法
+[self.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+self.navigationBar.shadowImage = [UIImage new];
+ 
+//第二种方法
+[[self.navigationBar subviews] objectAtIndex:0].alpha = 0;
+
+</pre>
+<h2 class="thirteen">13、tabBar纯透明和去掉底部黑线</h2>
+<pre>
+[self.tabBar setBackgroundImage:[UIImage new]];
+self.tabBar.shadowImage = [UIImage new];
+</pre>
+
+ 
+ 
+  </body>
+
+
+</html>

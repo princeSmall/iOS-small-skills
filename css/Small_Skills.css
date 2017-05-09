@@ -1,0 +1,21 @@
+
+
+h1
+{
+    color: red;
+    text-align: center;
+    font-size: 30pt;
+}
+h2{
+    color: green;
+    font-size: 20pt;
+    text-align: center;
+}
+h3{
+    color: blue;
+    font-size: 15pt;
+    text-align: center;
+}
+pre{
+    margin-left: 30pt;
+}
