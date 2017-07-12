@@ -308,7 +308,53 @@
             }
           }
  
+13. 过滤空格
  
+ 
+        -(NSString *)userName:(NSString *)name{
+    
+        name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];//前后空格
+        
+        name = [name stringByReplacingOccurrencesOfString:@" " withString:@""];//中间空格
+        return name;
+        }
+        
+14. 获取邮箱用户部分和域名部分
+
+        - (BOOL)validateEmail:(NSString *)email {
+            if ((0 != [email rangeOfString:@"@"].length) &&
+                (0 != [email rangeOfString:@"."].length)) {
+                 NSCharacterSet *tmpInvalidCharSet =
+        [[NSCharacterSet alphanumericCharacterSet] invertedSet];
+                NSMutableCharacterSet *tmpInvalidMutableCharSet =
+        [tmpInvalidCharSet mutableCopy];
+                [tmpInvalidMutableCharSet removeCharactersInString:@"_-"];
+        
+                 NSRange range1 = [email rangeOfString:@"@" options:NSCaseInsensitiveSearch];
+        
+        //取得用户名部分
+        NSString *userNameString = [email substringToIndex:range1.location];
+        NSLog(@"length---%ld",userNameString.length);
+        if (userNameString.length < 1 || userNameString.length > 20) {
+            return NO;
+        }else
+        //取得域名部分
+        NSString *domainString = [email substringFromIndex:range1.location + 1];
+        NSArray *domainArray = [domainString componentsSeparatedByString:@"."];
+        
+        for (NSString *string in domainArray) {
+            NSRange rangeOfInavlidChars =
+            [string rangeOfCharacterFromSet:tmpInvalidMutableCharSet];
+            if (rangeOfInavlidChars.length != 0 || [string isEqualToString:@""])
+                return NO;
+        }
+        
+        return YES;
+        } else {
+        return NO;
+               }
+        }
+
         
         
         
